@@ -1,0 +1,16 @@
+# Compiled output
+bin/
+
+# IDE configs
+.vscode/
+.zed/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
