@@ -31,4 +31,10 @@ public class Obat {
 
     public int getStok() { return stok; }
     public void setStok(int stok) { this.stok = stok; }
+
+    @Override
+    public String toString() {
+        return "Obat{id=" + id + ", namaObat='" + namaObat + "', satuan='" + satuan +
+               "', hargaSatuan=" + hargaSatuan + ", stok=" + stok + "}";
+    }
 }

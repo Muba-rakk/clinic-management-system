@@ -45,4 +45,11 @@ public class Pasien {
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    @Override
+    public String toString() {
+        return "Pasien{id=" + id + ", nama='" + nama + "', alamat='" + alamat +
+               "', noTelepon='" + noTelepon + "', tanggalLahir='" + tanggalLahir +
+               "', jenisKelamin='" + jenisKelamin + "'}";
+    }
 }

@@ -31,4 +31,10 @@ public class ResepObat {
 
     public String getAturanPakai() { return aturanPakai; }
     public void setAturanPakai(String aturanPakai) { this.aturanPakai = aturanPakai; }
+
+    @Override
+    public String toString() {
+        return "ResepObat{id=" + id + ", resepId=" + resepId + ", obatId=" + obatId +
+               ", jumlah=" + jumlah + ", aturanPakai='" + aturanPakai + "'}";
+    }
 }
