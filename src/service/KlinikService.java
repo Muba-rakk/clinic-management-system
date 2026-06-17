@@ -3,8 +3,11 @@ package service;
 import entity.*;
 import dao.*;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class KlinikService {
 
@@ -17,6 +20,9 @@ public class KlinikService {
     private final ResepObatDAO resepObatDAO;
     private final PembayaranDAO pembayaranDAO;
     private final DetailPembayaranDAO detailPembayaranDAO;
+
+    private static final double BIAYA_PENDAFTARAN = 10000;
+    private static final double BIAYA_TINDAKAN = 25000;
 
     public KlinikService(PasienDAO pasienDAO, DokterDAO dokterDAO,
                          ObatDAO obatDAO, PendaftaranDAO pendaftaranDAO,
@@ -298,16 +304,25 @@ public class KlinikService {
 
         List<Resep> resepList = resepDAO.findByRekamMedisId(rm.getId());
 
-        final double BIAYA_PENDAFTARAN = 10000;
-        final double BIAYA_TINDAKAN = 25000;
-
+        // hitung total biaya obat + siapkan data detail dalam satu pass
+        Map<Integer, Obat> obatCache = new HashMap<>();
+        List<ItemObat> itemObatList = new ArrayList<>();
         double totalBiayaObat = 0;
+
         for (Resep resep : resepList) {
             List<ResepObat> items = resepObatDAO.findByResepId(resep.getId());
             for (ResepObat item : items) {
-                Obat obat = obatDAO.findById(item.getObatId());
+                Obat obat = obatCache.get(item.getObatId());
+                if (obat == null) {
+                    obat = obatDAO.findById(item.getObatId());
+                    if (obat != null) {
+                        obatCache.put(item.getObatId(), obat);
+                    }
+                }
                 if (obat != null) {
-                    totalBiayaObat += obat.getHargaSatuan() * item.getJumlah();
+                    double subtotal = obat.getHargaSatuan() * item.getJumlah();
+                    totalBiayaObat += subtotal;
+                    itemObatList.add(new ItemObat(obat, item.getJumlah(), subtotal));
                 }
             }
         }
@@ -322,39 +337,48 @@ public class KlinikService {
         pembayaran.setMetodeBayar(metodeBayar);
         pembayaranDAO.insert(pembayaran);
 
-        // simpan rincian pembayaran: pendaftaran, tindakan, dan tiap obat
+        // simpan rincian pembayaran
+        simpanDetailPembayaran(pembayaran.getId(), itemObatList);
+
+        return totalBayar;
+    }
+
+    private void simpanDetailPembayaran(int pembayaranId, List<ItemObat> itemObatList) {
         DetailPembayaran dp1 = new DetailPembayaran();
-        dp1.setPembayaranId(pembayaran.getId());
+        dp1.setPembayaranId(pembayaranId);
         dp1.setDeskripsi("Biaya Pendaftaran");
         dp1.setJumlahBiaya(BIAYA_PENDAFTARAN);
         detailPembayaranDAO.insert(dp1);
 
         DetailPembayaran dp2 = new DetailPembayaran();
-        dp2.setPembayaranId(pembayaran.getId());
+        dp2.setPembayaranId(pembayaranId);
         dp2.setDeskripsi("Biaya Tindakan Medis");
         dp2.setJumlahBiaya(BIAYA_TINDAKAN);
         detailPembayaranDAO.insert(dp2);
 
-        for (Resep resep : resepList) {
-            List<ResepObat> items = resepObatDAO.findByResepId(resep.getId());
-            for (ResepObat item : items) {
-                Obat obat = obatDAO.findById(item.getObatId());
-                if (obat != null) {
-                    double subtotal = obat.getHargaSatuan() * item.getJumlah();
-                    DetailPembayaran dp3 = new DetailPembayaran();
-                    dp3.setPembayaranId(pembayaran.getId());
-                    dp3.setDeskripsi("Obat: " + obat.getNamaObat() + " (" + item.getJumlah() + " " + obat.getSatuan() + ")");
-                    dp3.setJumlahBiaya(subtotal);
-                    detailPembayaranDAO.insert(dp3);
-                }
-            }
+        for (ItemObat item : itemObatList) {
+            DetailPembayaran dp = new DetailPembayaran();
+            dp.setPembayaranId(pembayaranId);
+            dp.setDeskripsi("Obat: " + item.obat.getNamaObat() + " (" + item.jumlah + " " + item.obat.getSatuan() + ")");
+            dp.setJumlahBiaya(item.subtotal);
+            detailPembayaranDAO.insert(dp);
         }
-
-        pendaftaranDAO.updateStatus(pendaftaranId, "SELESAI");
-        return totalBayar;
     }
 
     public List<Pembayaran> laporanPendapatan(Date start, Date end) {
         return pembayaranDAO.findByTanggal(start, end);
+    }
+
+    // Inner class untuk menyimpan data item obat hasil perhitungan
+    private static class ItemObat {
+        Obat obat;
+        int jumlah;
+        double subtotal;
+
+        ItemObat(Obat obat, int jumlah, double subtotal) {
+            this.obat = obat;
+            this.jumlah = jumlah;
+            this.subtotal = subtotal;
+        }
     }
 }

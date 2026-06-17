@@ -26,4 +26,10 @@ public class DetailPembayaran {
 
     public double getJumlahBiaya() { return jumlahBiaya; }
     public void setJumlahBiaya(double jumlahBiaya) { this.jumlahBiaya = jumlahBiaya; }
+
+    @Override
+    public String toString() {
+        return "DetailPembayaran{id=" + id + ", pembayaranId=" + pembayaranId +
+               ", deskripsi='" + deskripsi + "', jumlahBiaya=" + jumlahBiaya + "}";
+    }
 }

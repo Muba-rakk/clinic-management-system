@@ -31,4 +31,10 @@ public class Dokter {
 
     public String getJadwalPraktek() { return jadwalPraktek; }
     public void setJadwalPraktek(String jadwalPraktek) { this.jadwalPraktek = jadwalPraktek; }
+
+    @Override
+    public String toString() {
+        return "Dokter{id=" + id + ", nama='" + nama + "', spesialisasi='" + spesialisasi +
+               "', noTelepon='" + noTelepon + "', jadwalPraktek='" + jadwalPraktek + "'}";
+    }
 }

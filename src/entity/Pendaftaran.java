@@ -36,4 +36,10 @@ public class Pendaftaran {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    @Override
+    public String toString() {
+        return "Pendaftaran{id=" + id + ", pasienId=" + pasienId + ", dokterId=" + dokterId +
+               ", tanggalDaftar=" + tanggalDaftar + ", keluhan='" + keluhan + "', status='" + status + "'}";
+    }
 }

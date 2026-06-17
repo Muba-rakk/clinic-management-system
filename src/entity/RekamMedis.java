@@ -46,4 +46,11 @@ public class RekamMedis {
 
     public Date getTanggalPeriksa() { return tanggalPeriksa; }
     public void setTanggalPeriksa(Date tanggalPeriksa) { this.tanggalPeriksa = tanggalPeriksa; }
+
+    @Override
+    public String toString() {
+        return "RekamMedis{id=" + id + ", pendaftaranId=" + pendaftaranId + ", dokterId=" + dokterId +
+               ", pasienId=" + pasienId + ", diagnosa='" + diagnosa + "', tindakan='" + tindakan +
+               "', catatanTambahan='" + catatanTambahan + "'}";
+    }
 }

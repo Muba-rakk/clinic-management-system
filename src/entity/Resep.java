@@ -27,4 +27,10 @@ public class Resep {
 
     public String getKeterangan() { return keterangan; }
     public void setKeterangan(String keterangan) { this.keterangan = keterangan; }
+
+    @Override
+    public String toString() {
+        return "Resep{id=" + id + ", rekamMedisId=" + rekamMedisId +
+               ", tanggalResep=" + tanggalResep + ", keterangan='" + keterangan + "'}";
+    }
 }

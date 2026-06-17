@@ -32,4 +32,11 @@ public class Pembayaran {
 
     public String getMetodeBayar() { return metodeBayar; }
     public void setMetodeBayar(String metodeBayar) { this.metodeBayar = metodeBayar; }
+
+    @Override
+    public String toString() {
+        return "Pembayaran{id=" + id + ", pendaftaranId=" + pendaftaranId +
+               ", tanggalBayar=" + tanggalBayar + ", totalBayar=" + totalBayar +
+               ", metodeBayar='" + metodeBayar + "'}";
+    }
 }
