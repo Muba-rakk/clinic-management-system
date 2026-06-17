@@ -228,19 +228,47 @@ try {
 }
 ```
 
-### 4.3 WAJIB: Environment Variable untuk Kredensial
+### 4.3 WAJIB: File .env atau Environment Variable
 
 **DILARANG KERAS** menuliskan username/password database langsung di dalam kode Java.
 
+Kredensial bisa dibaca dari dua sumber (prioritas: file .env dulu, baru System.getenv):
+
+**Opsi A — File `.env` (lebih praktis):**
+Copy file `.env.example` ke `.env`, lalu isi kredensial:
+```
+# .env
+DB_URL=jdbc:mysql://localhost:3306/dbklinik
+DB_USER=root
+DB_PASSWORD=
+```
+
+Metode ini otomatis dibaca oleh `DatabaseConfig.java` saat program dijalankan.
+
+**Opsi B — Environment Variable OS (alternatif):**
+Set sebelum menjalankan program:
+```bash
+export DB_URL="jdbc:mysql://localhost:3306/dbklinik"
+export DB_USER="root"
+export DB_PASSWORD=""
+```
+
 ```java
-// BENAR - Ambil dari environment variable
+// BENAR — Dibaca dari .env atau System.getenv(), tidak hardcode
 public class DatabaseConfig {
-    private static final String URL = System.getenv("DB_URL");
-    private static final String USER = System.getenv("DB_USER");
-    private static final String PASSWORD = System.getenv("DB_PASSWORD");
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
+
+    static {
+        bacaFileEnv();  // coba .env dulu
+        if (URL == null) URL = System.getenv("DB_URL");
+        if (USER == null) USER = System.getenv("DB_USER");
+        if (PASSWORD == null) PASSWORD = System.getenv("DB_PASSWORD");
+    }
 }
 
-// SALAH - Hardcode kredensial di source code
+// SALAH — Hardcode kredensial di source code
 public class DatabaseConfig {
     private static final String URL = "jdbc:mysql://localhost:3306/dbklinik";
     private static final String USER = "root";        // BERBAHAYA!
@@ -248,22 +276,20 @@ public class DatabaseConfig {
 }
 ```
 
-### 4.4 Setting Environment Variable (Cara Menjalankan)
+### 4.4 Cara Menjalankan dengan .env
 
-Sebelum menjalankan program, set environment variable:
+Cukup copy `.env.example` ke `.env`, isi sesuai kredensial MySQL lokal, lalu jalankan program. `DatabaseConfig` akan membaca file `.env` secara otomatis.
 
-**Linux/Mac:**
 ```bash
-export DB_URL="jdbc:mysql://localhost:3306/dbklinik"
-export DB_USER="root"
-export DB_PASSWORD=""
-```
+# 1. Copy file contoh
+cp .env.example .env
 
-**Windows (CMD):**
-```cmd
-set DB_URL=jdbc:mysql://localhost:3306/dbklinik
-set DB_USER=root
-set DB_PASSWORD=
+# 2. Edit .env (isi password MySQL kamu)
+nano .env
+
+# 3. Compile & run — DatabaseConfig baca otomatis dari .env
+javac -d bin -cp "lib/mysql-connector-j-8.0.33.jar" src/**/*.java
+java -cp "bin:lib/mysql-connector-j-8.0.33.jar" MainApp
 ```
 
 ---

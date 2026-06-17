@@ -935,16 +935,53 @@ package config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class DatabaseConfig {
-    // Ambil dari environment variable — JANGAN hardcode!
-    private static final String URL = System.getenv("DB_URL");
-    private static final String USER = System.getenv("DB_USER");
-    private static final String PASSWORD = System.getenv("DB_PASSWORD");
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
+
+    // Static initializer: baca dari file .env dulu, fallback ke System.getenv()
+    static {
+        bacaFileEnv();
+        if (URL == null) URL = System.getenv("DB_URL");
+        if (USER == null) USER = System.getenv("DB_USER");
+        if (PASSWORD == null) PASSWORD = System.getenv("DB_PASSWORD");
+    }
+
+    private static void bacaFileEnv() {
+        String envPath = ".env";
+        try (BufferedReader reader = new BufferedReader(new FileReader(envPath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+
+                String[] parts = line.split("=", 2);
+                if (parts.length == 2) {
+                    String key = parts[0].trim();
+                    String value = parts[1].trim();
+                    switch (key) {
+                        case "DB_URL"      -> URL = value;
+                        case "DB_USER"     -> USER = value;
+                        case "DB_PASSWORD" -> PASSWORD = value;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // File .env tidak ditemukan — nanti fallback ke System.getenv()
+        }
+    }
 
     public static Connection getConnection() throws SQLException {
         if (URL == null || USER == null) {
-            throw new SQLException("Environment variables DB_URL and DB_USER must be set!");
+            throw new SQLException(
+                "Kredensial database tidak ditemukan. " +
+                "Buat file .env (copy dari .env.example) atau set environment variable DB_URL, DB_USER, DB_PASSWORD."
+            );
         }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
