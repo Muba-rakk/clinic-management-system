@@ -240,7 +240,12 @@ public class MainApp {
     private int bacaInt(String label) {
         while (true) {
             try {
-                return Integer.parseInt(bacaText(label));
+                int value = Integer.parseInt(bacaText(label));
+                if (value < 0) {
+                    System.out.println("ID tidak boleh negatif.");
+                    continue;
+                }
+                return value;
             } catch (NumberFormatException e) {
                 System.out.println("Input harus angka bulat.");
             }
